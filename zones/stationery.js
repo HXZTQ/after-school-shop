@@ -108,7 +108,7 @@ function showItems(kit, packed) {
       center(c, G.W() * ({pen:.16, book:.28, stickers:.72, tape:.84}[name]), scene.boxY - px(8));
       c.st.sx = c.st.sy = .72;
     } else if (index < 0) {
-      center(c, G.W() * (name === "pen" || name === "stickers" ? .12 : .87), scene.boxY - px(65));
+      center(c, G.W() * (name === "pen" || name === "stickers" ? .12 : .87), scene.boxY - px(22));
       c.st.sx = c.st.sy = .55; c.st.a = .35;
     } else if (packed.indexOf(name) >= 0) {
       var r = slot(index);
@@ -193,26 +193,25 @@ function drawScene(k) {
 }
 function setup(v, D, result) {
   var d = result || draft();
+  var rabY = Math.min(G.H()*.72, G.pt(.5,1235/1846).y + G.H()*.075);
   scene = {clock:0, mode:"main", line:false, egg:false, motion:0, busyUntil:0, lastActor:-10,
-    boxY:Math.min(G.H()*.775, G.bottom()-px(104)), task:true, tagShift:0, tagAngle:0,
+    boxY:G.pt(.5,.735).y, task:true, tagShift:0, tagAngle:0,
     tie:d.sealed?1:0, sleeve:d.stampBy==="miffy"&&!!d.stamp, tail:0, smallSeal:false,
     dots:false, dotsY:0, stock:0, slotPaper:0, drawer:0, exam:null, result:result || null};
   G.layoutScene({actors:[
-    {actor:RAB,pose:"rabA1",x:.28,y:.72,h:.30,face:FACE.rabA1,layer:"L20"},
+    {actor:RAB,pose:"rabA1",x:.28,y:rabY/G.H(),h:.30,face:FACE.rabA1,layer:"L20"},
     {actor:BOY,pose:"boy1",x:.72,y:.75,h:.37,face:FACE.boy1,layer:"L20"}
   ]});
   [RAB,BOY].forEach(function(c){c.ba=c.ba0=.006;c.sa=c.sa0=0;Object.keys(FACE).forEach(function(p){c.faces=c.faces||{};c.faces[p]=FACE[p]})});
-  var table = prop("table","wTable",.35,"L30");
-  G.show(table,"wTable",{x:0,y:G.H()*.65,shadow:false}); layer(table,"L30");
-  table.st.sx=G.W()/(852*table.k); table.st.sy=G.H()*.35/(668*table.k);
-  var stool = prop("stool","stool",.10,"L10"); place(stool,G.W()*.28,G.H()*.83);
+  G.tableForeground(BG,1235/1846);
+  var stool = prop("stool","stool",.10,"L10"); place(stool,G.W()*.28,rabY+G.H()*.11);
   var box = prop("box","boxOpen",.115); place(box,G.W()*.5,scene.boxY);
   prop("front","boxFront",.115); place(props.front,G.W()*.5,scene.boxY);
   ["pen","book","stickers","tape"].forEach(function(n){prop(n,ITEM[n],n==="pen"?.068:.06)});
   var stamp=prop("stamp","prop6",.075); place(stamp,G.W()*.84,scene.boxY-px(42));
-  prop("ruler","st7",.025); place(props.ruler,G.W()*.16,scene.boxY+px(60));
+  prop("ruler","st7",.025); place(props.ruler,G.W()*.16,scene.boxY+px(48));
   prop("eraser","st6",.017); place(props.eraser,G.W()*.26,scene.boxY+px(48));
-  prop("displayPen","st1",.033); place(props.displayPen,G.W()*.57,scene.boxY+px(63));
+  prop("displayPen","st1",.033); place(props.displayPen,G.W()*.57,scene.boxY+px(51));
   showItems(d.giftKit,d.packed||[]);
   /* 前沿必须在装入物之前，物件按规范槽位放置。 */
   props.front.el.parentNode.appendChild(props.front.el);
@@ -453,7 +452,7 @@ function eggs() {
   G.hot(rect(G.W()*.38,scene.boxY-px(12),G.W()*.24,px(34)),function(){
     if(!allowed("stock"))return;if(++count%3)return;
     scene.stock=1;G.tw(scene,"stock",0,.3,.3);eggLine("库存充足，桌面面积另议。",RAB);
-  },{id:"w-box-stock",label:"盒侧"});
+  },{id:"w-box-stock",poke:true,label:"盒侧"});
   var drawerRec, drawerArea=rect(G.W()*.68,scene.boxY+px(73),G.W()*.16,px(44));
   function armDrawer(){
     G.unhot(drawerRec);
@@ -481,11 +480,11 @@ function eggs() {
   G.follow(function(){if(drawerRec&&!drawerRec.dead)drawerRec.el.style.pointerEvents=scene.drawer||quiet()?"auto":"none";});
   G.hot({rect:function(){var p=sleevePoint();return rect(p.x-px(22),p.y-px(10),px(44),px(44))}},function(){
     if(!scene.sleeve||!allowed("sleeve"))return;nudge(BOY,1,7);nudge(RAB,-2,-4);nudge(props.stamp,0,-6);
-  },{id:"w-sleeve",label:"袖口的小章"});
+  },{id:"w-sleeve",poke:true,label:"袖口的小章"});
   /* 按住的小玩具使用自己的命中区，移动超过八像素或取消立即复位。 */
   function toy(area,id,start,release){
     var pressing=false, began=0, point0=null, cooling=0;
-    var h=G.hot(area,function(){if(quiet()&&scene.clock>=cooling){start(1);G.sched(.18,function(){release(false)});cooling=scene.clock+.7;}},{id:id,label:id==="w-ruler"?"尺子":"标签角"});
+    var h=G.hot(area,function(){if(quiet()&&scene.clock>=cooling){start(1);G.sched(.18,function(){release(false)});cooling=scene.clock+.7;}},{id:id,poke:true,label:id==="w-ruler"?"尺子":"标签角"});
     function down(e){if(!quiet()||scene.clock<cooling)return;var p=e.touches&&e.touches[0]||e;pressing=true;began=scene.clock;point0={x:p.clientX,y:p.clientY};}
     h.el.addEventListener("pointerdown",down);h.el.addEventListener("touchstart",down);h.el.addEventListener("mousedown",down);
     scene.cancelToys=scene.cancelToys||[];scene.cancelToys.push(function(){if(pressing){pressing=false;release(true);cooling=scene.clock+.7;}});
@@ -501,7 +500,7 @@ function eggs() {
     var rec=G.drag(c,rect(G.W()*.62,scene.boxY+px(43),G.W()*.22,px(28)),function(info){
       var y=scene.boxY+px(info.fy<.5?49:61);center(c,G.W()*.78,y);G.tw(scene,"slotPaper",-px(15),.2);G.tw(scene,"slotPaper",0,.2,.25);nudge(RAB,1,0);nudge(BOY,-1,0);
       /* 展示笔退回桌边，下一次仍有真实的拿起和入槽距离。 */
-      G.sched(.7,function(){center(c,G.W()*.57,scene.boxY+px(63));penGame()});
+      G.sched(.7,function(){center(c,G.W()*.57,scene.boxY+px(51));penGame()});
     },{id:"w-display-pen",label:"把展示笔放进浅槽",need:false,pad:6,onMove:function(){scene.busyUntil=scene.clock+.3;},onMiss:function(){nudge(RAB,1,0)}});
     G.follow(function(){if(!rec.dead)rec.el.style.pointerEvents=quiet()?"auto":"none";});
   }

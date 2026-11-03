@@ -39,16 +39,15 @@ function scene(v,D,mode){var d=mode==="result"?G.roomView("k").result:draft(),U=
   p:0,fall:0,board:0,scroll:d.bunGiven?.12:0,scrollShift:0,spoon:0,dish:0,dishUp:0,steamBend:0,shine:0,plateUp:0,trayTilt:0,lid:0,lidTurn:0,
   sideAction:null,dropDone:mode==="result",lastEgg:-99,eggBusy:false,maoPose:MB,renPose:RB,targets:[],idleUntil:0};
  G.par(0);G.dim(.28,.18);
- var tableY=H*.69,cy=H*.74;
+ var tableY=G.pt(.5,1383/1846).y,cy=G.pt(.5,.775).y;
  /* 选择带使用公共横排；桌面操作区留在按钮上方。 */
- if(mode==="choose"){cy=Math.min(cy,G.bottom()-146*U);tableY=Math.min(tableY,cy-25*U)}
+ if(mode==="choose"){cy=Math.max(tableY+20*U,Math.min(cy,G.bottom()-146*U))}
  if(mode==="result"){S.noodles=true;S.bunGiven=true;}
  S.cy=cy;S.tableY=tableY;S.bowl=box(W*.50,cy,106*U,58*U);S.tray=box(W*.72,cy+12*U,118*U,44*U);
  S.boardBox=box(W*.50,cy-25*U,210*U,47*U);S.bunPlate=box(W*.22,cy+12*U,64*U,24*U);S.domeBox=box(W*.79,cy,60*U,64*U);
  S.slots=G.layoutScene({actors:[{actor:MAO,pose:MB,x:.27,y:.83,h:.49,face:FACE.eMao,layer:"L20"},{actor:REN,pose:RB,x:.70,y:.83,h:.51,face:FACE.eRen,layer:"L20"}]});
  MAO.sa=REN.sa=0;MAO.ba=REN.ba=.005;MAO.blinkOn=REN.blinkOn=false;
- var table=G.mk("k2-table",{pose:"kTable",t:100});G.show(table,"kTable",{x:0,y:tableY,shadow:false});table.layer="L30";table.el.style.zIndex="30";
- table.st.sx=W/(852*table.k);table.st.sy=(H-tableY)/(350*table.k);
+ G.tableForeground("bg-kitchen",1383/1846);
  S.bun=prop("bun","bun",28,W*.22,cy+12*U);S.dome=prop("dome","dome",58,W*.79,cy+15*U);
  S.dome.layer="L40";S.bun.layer="L40";
  if(mode==="serve"||mode==="result"){G.hide(S.dome);S.bowl.x=W*.31-S.bowl.w/2;if(mode==="result"){S.tray.x=W*.50-S.tray.w/2;S.bowl.x=S.tray.x+6*U;S.bowl.y=S.tray.y-27*U}S.maoPose=MT;S.renPose=RT;pose(MAO,MT);pose(REN,RT);}
@@ -133,7 +132,7 @@ function pullInput(done){beginInput(true);S.board=1;S.p=0;S.boardShift=0;S.renPo
   var area=box(G.W()*.5,S.noodleY+6*U,200*U,44*U);S.targets=[area];
   var rec=G.pull(area,{dir:"h",dist:90*U,id:"k-noodle",label:"拉长点",onMove:function(p){S.p=p;if(p>=.5&&!half){half=true;event("bowl-off-center");}if(p<.1)half=false;},done:function(info){off();endInput();S.p=1;G.anim(.42,function(p){S.fall=p},0,function(){S.noodles=true;S.board=0;S.fall=0;var from={x:S.bowl.x,y:S.bowl.y};G.anim(.38,function(p){S.bowl.x=from.x+(home.x-from.x)*p;S.bowl.y=from.y+(home.y-from.y)*p},0,function(){S.noodleY=null;G.roomDraft("k",{noodles:true});event("noodles-landed");done(info)})})}});var off=auxiliary(rec,"拉长点");});}
 function soupPre(v,fast,done){beginInput();var U=unit();S.sideAction="soup";S.pot=box(G.W()*.24,S.cy-8*U,68*U,42*U);S.ladle=center(S.pot);S.targets=[S.pot];
- var rec=G.rub(S.pot,{mode:"wipe",need:150*U,id:"k-soup",label:"添一勺汤",onMove:function(p,x,y){S.ladle={x:G.clamp(x,S.pot.x,S.pot.x+S.pot.w),y:G.clamp(y,S.pot.y,S.pot.y+S.pot.h)};},done:function(info){off();endInput();var start={x:S.ladle.x,y:S.ladle.y},end=center(S.bowl);G.anim(.44,function(p){S.ladle.x=start.x+(end.x-start.x)*p;S.ladle.y=start.y+(end.y-start.y)*p-Math.sin(p*Math.PI)*12*U;},0,function(){S.side="soup";S.sideAction=null;G.roomDraft("k",{side:"soup",taster:null});G.sfx("water");done({side:"soup",assisted:!info.real})})}});var off=auxiliary(rec,"添一勺汤");}
+ var rec=G.rub(S.pot,{mode:"circle",need:1.4,id:"k-soup",label:"添一勺汤",onMove:function(p,x,y){S.ladle={x:G.clamp(x,S.pot.x,S.pot.x+S.pot.w),y:G.clamp(y,S.pot.y,S.pot.y+S.pot.h)};},done:function(info){off();endInput();var start={x:S.ladle.x,y:S.ladle.y},end=center(S.bowl);G.anim(.44,function(p){S.ladle.x=start.x+(end.x-start.x)*p;S.ladle.y=start.y+(end.y-start.y)*p-Math.sin(p*Math.PI)*12*U;},0,function(){S.side="soup";S.sideAction=null;G.roomDraft("k",{side:"soup",taster:null});G.sfx("water");done({side:"soup",assisted:!info.real})})}});var off=auxiliary(rec,"添一勺汤");}
 function toastPre(v,fast,done){beginInput();S.sideAction="toast";var U=unit();S.targets=[S.domeBox];pulse(REN,-1,0);pulse(MAO,1,0);
  var rec=G.pull({follow:S.dome},{dir:"up",dist:65*U,id:"k-dome",label:"提起银罩",onMove:function(p){S.dome.st.y=-65*U*p;},done:function(info){off();endInput();S.side="toast";S.sideAction=null;G.hide(S.dome);G.roomDraft("k",{side:"toast",taster:null});done({side:"toast",assisted:!info.real})}});var off=auxiliary(rec,"提起银罩");}
 function tastePre(who){return function(v,fast,done){silence();S.taster=who;G.roomDraft("k",{taster:who});done({taster:who})}}
@@ -170,7 +169,7 @@ function eggs(){clearEggs();S.main=S.mode!=="result";MAO.blinkOn=REN.blinkOn=tru
  if(S.dome.on)S.eggs.push(G.hot({follow:S.dome},function(){if(S.input||S.eggBusy)return;S.eggBusy=true;G.sfx("chop");pulse(REN,-1,0);G.anim(.4,function(p){S.dome.st.y=-Math.sin(p*Math.PI)*3*unit()},0,function(){S.dome.st.y=0;S.eggBusy=false});pulse(MAO,1,0)},{id:"k-dome-peek",label:"银罩"}));
  if(S.noodles){var r=steamBox();r.h=Math.max(44,r.h);
   var steam=G.rub(r,{mode:"wipe",need:28*unit(),id:"k-steam",label:"蒸汽",pulse:false,onMove:function(p,x){if(!S.input)S.steamBend=G.clamp(x-(S.bowl.x+S.bowl.w/2),-16*unit(),16*unit())},done:function(){S.steamBend=0;G.sfx("chop");pulse(MAO,1,0);}});steam.need=false;steam.el.removeAttribute("data-need");S.eggs.push(steam);
-  S.eggs.push(G.hot({rect:function(){return S.bowl}},function(){if(S.input||S.eggBusy)return;S.eggBusy=true;pose(MAO,MT);pulse(MAO,1,0);G.sched(.55,function(){restore(MAO);S.eggBusy=false})},{id:"k-smell",label:"闻一闻汤"}));}
+  S.eggs.push(G.hot({rect:function(){return S.bowl}},function(){if(S.input||S.eggBusy)return;S.eggBusy=true;pose(MAO,MT);pulse(MAO,1,0);G.sched(.55,function(){restore(MAO);S.eggBusy=false})},{id:"k-smell",poke:true,label:"闻一闻汤"}));}
  if(S.dropDone){S.plate=box(G.W()*.83,S.cy+17*unit(),48*unit(),24*unit());var rag=prop("rag","rag",26,G.W()*.70,S.cy+40*unit());
   var polish=G.drag(rag,S.plate,function(){G.hide(rag);S.shine=1;S.plateUp=4*unit();pulse(REN,-1,0);pulse(MAO,1,0);G.sched(.6,function(){move(S,"plateUp",0,.24);move(S,"shine",0,.3)})},{id:"k-polish",label:"擦亮空盘",need:false,onMove:function(x,y){rag.at.x=G.clamp(x,28*unit(),G.W()-28*unit());rag.at.y=G.clamp(y,S.tableY+26*unit(),G.bottom()-24*unit())}});polish.el.style.zIndex="30";S.eggs.push(polish);
   if(S.side==="toast"){G.show(S.dome,"dome",{x:G.W()*.18,y:S.cy-28*unit(),shadow:false});G.safeProp({x:S.dome.at.x-1,y:S.dome.at.y-1,w:2,h:1},S.dome);S.eggs.push(G.hot({follow:S.dome},function(){if(S.eggBusy)return;S.eggBusy=true;S.sideAction="toast";S.domeBox=box(S.dome.at.x,S.dome.at.y-20*unit(),60*unit(),64*unit());G.anim(.5,function(p){S.dome.st.y=-Math.sin(p*Math.PI)*30*unit()},0,function(){S.dome.st.y=0;S.sideAction=null;S.eggBusy=false})},{id:"k-dome-again",label:"再看一眼吐司"}));}}
